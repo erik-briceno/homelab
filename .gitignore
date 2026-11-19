@@ -1,5 +1,8 @@
-.env
+# Secretos y datos locales: nunca al repo
 *.env
-!.env.example
+!*.env.example
+state/
 data/
+panel-data/
+adguard/
 *.log
