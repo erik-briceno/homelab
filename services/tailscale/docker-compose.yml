@@ -1,0 +1,21 @@
+# Tailscale: VPN mesh (WireGuard) para entrar a la red de casa desde el móvil.
+# El NAS se anuncia como exit node: todo el tráfico del móvil puede salir por casa.
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: nas-brice
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_EXTRA_ARGS: --advertise-exit-node
+      TS_USERSPACE: "false"
+    volumes:
+      - ./data:/var/lib/tailscale
