@@ -1,0 +1,35 @@
+# Red de casa: AdGuard Home (DNS + filtros) y panel propio.
+# Los dos usan la red del NAS directamente (network_mode: host):
+#  - AdGuard necesita el puerto 53 del NAS y ver la IP real de cada dispositivo.
+#  - El panel necesita leer la tabla ARP del NAS para saber la MAC de cada dispositivo.
+# El panel usa la imagen oficial de Python y monta el código: no hace falta compilar nada.
+
+services:
+  adguardhome:
+    image: adguard/adguardhome:latest
+    container_name: adguardhome
+    network_mode: host          # DNS en el 53, panel web en el 3000
+    restart: unless-stopped
+    volumes:
+      - ./adguard/work:/opt/adguardhome/work
+      - ./adguard/conf:/opt/adguardhome/conf
+
+  panel:
+    image: python:3.12-slim
+    container_name: red-casa-panel
+    network_mode: host          # panel web en el 8088
+    restart: unless-stopped
+    working_dir: /srv
+    env_file: panel.env         # credenciales del panel; no se sube al repo
+    environment:
+      DB_PATH: /data/panel.db
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      PIP_ROOT_USER_ACTION: ignore
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    volumes:
+      - ./panel:/srv:ro
+      - ./panel-data:/data
+    command: ["sh", "-c", "pip install -q --no-cache-dir -r requirements.txt && exec uvicorn app.main:app --host 0.0.0.0 --port 8088 --proxy-headers --forwarded-allow-ips='*'"]
+    depends_on:
+      - adguardhome
