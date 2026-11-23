@@ -1,0 +1,7 @@
+{
+  "nas": "192.168.1.X",
+  "ntfy_topic": "tema-secreto-de-ntfy",
+  "pause_secret": "texto-aleatorio",
+  "threat_lists": [111, 222, 333, 444],
+  "bypass_list": 555
+}
